@@ -53,15 +53,19 @@ if [ ! -d "riscof" ]; then
   exit 1
 fi
 
-# Build RISCOF Docker image from local directory
-echo "🔨 Building RISCOF Docker image..."
-cd riscof
-docker build -t riscof:latest . || {
-  echo "❌ Failed to build RISCOF Docker image"
+# Build RISCOF Docker image only if it doesn't exist
+if docker image inspect riscof:latest > /dev/null 2>&1; then
+  echo "✅ Using existing RISCOF Docker image"
+else
+  echo "🔨 Building RISCOF Docker image..."
+  cd riscof
+  docker build -t riscof:latest . || {
+    echo "❌ Failed to build RISCOF Docker image"
+    cd ..
+    exit 1
+  }
   cd ..
-  exit 1
-}
-cd ..
+fi
 
 # Determine which ZKVMs to test
 if [ "$TARGETS" = "all" ]; then
